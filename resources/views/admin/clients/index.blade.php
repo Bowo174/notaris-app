@@ -358,7 +358,7 @@
                     files.forEach(function (file, index) {
                         const button = $('<button type="button" class="list-group-item list-group-item-action"></button>')
                             .append($('<span class="d-block font-weight-bold"></span>').text(file.label))
-                            .append($('<span class="d-block small text-muted"></span>').text(file.original_name))
+                            .append($('<span class="d-block small"></span>').text(file.original_name))
                             .on('click', function () {
                                 fileList.find('.active').removeClass('active');
                                 button.addClass('active');
