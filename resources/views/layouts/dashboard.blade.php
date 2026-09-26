@@ -33,6 +33,9 @@
                 <li class="nav-item {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.services.index') }}"><i class="fas fa-fw fa-concierge-bell"></i><span>Layanan</span></a>
                 </li>
+                <li class="nav-item {{ request()->routeIs('admin.clients.*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.clients.index') }}"><i class="fas fa-fw fa-address-book"></i><span>Data Client</span></a>
+                </li>
             @endif
             <hr class="sidebar-divider">
             <div class="sidebar-heading">Akun</div>
