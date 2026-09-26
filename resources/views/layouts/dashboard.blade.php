@@ -29,6 +29,11 @@
             <li class="nav-item {{ request()->routeIs($dashboardRoute) ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route($dashboardRoute) }}"><i class="fas fa-fw fa-tachometer-alt"></i><span>Dashboard</span></a>
             </li>
+            @if ($role === 'Admin')
+                <li class="nav-item {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.services.index') }}"><i class="fas fa-fw fa-concierge-bell"></i><span>Layanan</span></a>
+                </li>
+            @endif
             <hr class="sidebar-divider">
             <div class="sidebar-heading">Akun</div>
             <li class="nav-item">
