@@ -58,7 +58,7 @@
                             <th>Jenis Layanan</th>
                             <th>Tipe Client</th>
                             <th>No. WA</th>
-                            <th>Email</th>
+                            {{-- <th>Email</th> --}}
                             <th>Berkas</th>
                             <th class="text-center">Aksi</th>
                         </tr>
@@ -225,7 +225,7 @@
                         }
                     },
                     { data: 'phone', name: 'phone' },
-                    { data: 'email', name: 'email', defaultContent: '-' },
+                    // { data: 'email', name: 'email', defaultContent: '-' },
                     { data: 'files_count', name: 'files_count', searchable: false, className: 'text-center', render: value => value + ' berkas' },
                     { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-center' }
                 ],
