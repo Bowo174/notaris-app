@@ -13,21 +13,25 @@
             height: calc(100vh - 2rem);
             margin: 1rem auto;
         }
-        #client-view-modal .modal-dialog { width: calc(100vw - 3rem); max-width: 1180px; }
+        #client-view-modal .modal-dialog { width: calc(100vw - 3rem); max-width: 1180px; max-height: calc(100vh - 3.5rem); }
         #client-view-modal .modal-content { max-height: calc(100vh - 3.5rem); overflow: hidden; }
-        #client-view-modal .modal-body { flex: 1 1 auto; min-height: 0; max-height: calc(100vh - 12rem); overflow-y: auto; }
+        #client-view-modal .modal-header,
+        #client-view-modal .modal-footer { flex-shrink: 0; }
+        #client-view-modal .modal-body { flex: 1 1 auto; min-height: 0; max-height: calc(100vh - 12rem); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; }
         #client-file-preview { width: 100%; height: min(68vh, 720px); border: 1px solid #e3e6f0; border-radius: .25rem; background: #f8f9fc; }
         #client-file-list .list-group-item { overflow-wrap: anywhere; }
         #client-modal .modal-content { height: 100%; max-height: 100%; overflow: hidden; }
         #client-form { display: flex; flex-direction: column; height: 100%; min-height: 0; }
         #client-form .modal-header,
         #client-form .modal-footer { flex-shrink: 0; }
-        #client-form .modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+        #client-form .modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
         #upload-list .upload-row { border-bottom: 1px solid #e3e6f0; padding-bottom: 1rem; margin-bottom: 1rem; }
         @media (max-width: 575.98px) {
             #client-modal .modal-dialog { width: calc(100vw - 1rem); height: calc(100vh - 1rem); margin: .5rem auto; }
-            #client-view-modal .modal-dialog { width: calc(100vw - 1rem); margin: .5rem auto; }
-            #client-file-preview { height: 55vh; }
+            #client-view-modal .modal-dialog { width: calc(100vw - 1rem); height: calc(100vh - 1rem); height: calc(100dvh - 1rem); max-height: none; margin: .5rem auto; }
+            #client-view-modal .modal-content { height: 100%; max-height: 100%; }
+            #client-view-modal .modal-body { max-height: none; touch-action: pan-y; }
+            #client-file-preview { display: none !important; }
         }
     </style>
 @endpush
@@ -50,7 +54,7 @@
                     <thead class="thead-light">
                         <tr>
                             <th>Judul Akta</th>
-                            <th>NIK KTP</th>
+                            {{-- <th>NIK KTP</th> --}}
                             <th>Jenis Layanan</th>
                             <th>Tipe Client</th>
                             <th>No. WA</th>
@@ -173,6 +177,9 @@
                         <section class="col-lg-7" aria-label="Berkas client">
                             <h3 class="h6 font-weight-bold text-gray-800 mb-3">Berkas Pendukung</h3>
                             <div id="client-file-list" class="list-group mb-3"></div>
+                            <a id="client-pdf-new-tab" class="btn btn-sm btn-outline-primary mb-3 d-none" href="#" target="_blank" rel="noopener">
+                                <i class="fas fa-external-link-alt mr-1" aria-hidden="true"></i> Buka PDF di tab baru
+                            </a>
                             <div id="client-file-empty" class="border rounded text-center text-muted py-5">Belum ada berkas untuk ditampilkan.</div>
                             <iframe id="client-file-preview" class="d-none" title="Pratinjau berkas PDF"></iframe>
                         </section>
@@ -208,7 +215,7 @@
                 order: [[0, 'asc']],
                 columns: [
                     { data: 'deed_title', name: 'deed_title' },
-                    { data: 'nik', name: 'nik' },
+                    // { data: 'nik', name: 'nik' },
                     { data: 'service_name', name: 'service_name', orderable: false, searchable: false },
                     {
                         data: 'client_type', name: 'client_type',
@@ -319,6 +326,7 @@
 
             $('#client-view-modal').on('hidden.bs.modal', function () {
                 $('#client-file-preview').attr('src', 'about:blank').addClass('d-none');
+                $('#client-pdf-new-tab').attr('href', '#').addClass('d-none');
                 $('#client-file-list').empty();
                 $('#client-file-empty').removeClass('d-none');
             });
@@ -354,9 +362,11 @@
                             .on('click', function () {
                                 fileList.find('.active').removeClass('active');
                                 button.addClass('active');
+                                const fileUrl = filesEndpoint + '/' + encodeURIComponent(file.id);
                                 $('#client-file-preview')
-                                    .attr('src', filesEndpoint + '/' + encodeURIComponent(file.id))
+                                    .attr('src', fileUrl)
                                     .removeClass('d-none');
+                                $('#client-pdf-new-tab').attr('href', fileUrl).removeClass('d-none');
                             });
 
                         fileList.append(button);

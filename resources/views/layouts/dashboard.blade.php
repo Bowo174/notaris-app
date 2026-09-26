@@ -15,10 +15,24 @@
         .btn-primary { background-color: #174a45; border-color: #174a45; }
         .btn-primary:hover { background-color: #123d39; border-color: #123d39; }
         .sidebar-brand-text { font-size: .92rem; }
+        #accordionSidebar, #content-wrapper { transition-duration: .28s; transition-timing-function: ease; }
+        #wrapper { transition: opacity .16s ease, transform .16s ease; }
+        body.page-enter #wrapper { opacity: 0; transform: translateY(5px); }
+        body.page-leaving #wrapper { opacity: 0; transform: translateY(-3px); }
+        @media (prefers-reduced-motion: reduce) {
+            #accordionSidebar, #content-wrapper, #wrapper { transition: none !important; }
+        }
     </style>
     @stack('styles')
 </head>
-<body id="page-top">
+<body id="page-top" class="page-enter">
+    <script>
+        try {
+            if (localStorage.getItem(@json('notaris.sidebar.collapsed.' . strtolower($role))) === 'true') {
+                document.body.classList.add('sidebar-toggled');
+            }
+        } catch (error) {}
+    </script>
     <div id="wrapper">
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route($dashboardRoute) }}">
@@ -79,5 +93,45 @@
     <script src="{{ asset('template_dashboard/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
     <script src="{{ asset('template_dashboard/js/sb-admin-2.min.js') }}"></script>
     @stack('scripts')
+    <script>
+        (function () {
+            const sidebarKey = @json('notaris.sidebar.collapsed.' . strtolower($role));
+            const sidebar = document.getElementById('accordionSidebar');
+
+            if (sidebar && document.body.classList.contains('sidebar-toggled')) {
+                sidebar.classList.add('toggled');
+            }
+
+            document.getElementById('sidebarToggle')?.addEventListener('click', saveSidebarState);
+            document.getElementById('sidebarToggleTop')?.addEventListener('click', saveSidebarState);
+
+            function saveSidebarState() {
+                window.setTimeout(function () {
+                    try {
+                        localStorage.setItem(sidebarKey, String(sidebar?.classList.contains('toggled') ?? false));
+                    } catch (error) {}
+                }, 0);
+            }
+
+            window.requestAnimationFrame(function () {
+                document.body.classList.remove('page-enter');
+            });
+
+            document.addEventListener('click', function (event) {
+                const link = event.target.closest('a[href]');
+                if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                if (link.target && link.target !== '_self' || link.hasAttribute('download')) return;
+
+                const destination = new URL(link.href, window.location.href);
+                if (destination.origin !== window.location.origin) return;
+                if (destination.pathname === window.location.pathname && destination.search === window.location.search) return;
+
+                event.preventDefault();
+                if (document.body.classList.contains('page-leaving')) return;
+                document.body.classList.add('page-leaving');
+                window.setTimeout(function () { window.location.assign(destination.href); }, 130);
+            });
+        })();
+    </script>
 </body>
 </html>

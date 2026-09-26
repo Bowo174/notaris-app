@@ -25,7 +25,7 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/data-client', [ClientController::class, 'index'])->name('clients.index');
     Route::post('/data-client', [ClientController::class, 'store'])->name('clients.store');
     Route::get('/data-client/{client}', [ClientController::class, 'show'])->name('clients.show');
-    Route::post('/data-client/{client}', [ClientController::class, 'update'])->name('clients.update');
+    Route::put('/data-client/{client}', [ClientController::class, 'update'])->name('clients.update');
     Route::delete('/data-client/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
     Route::get('/data-client/berkas/{clientFile}', [ClientController::class, 'downloadFile'])->name('clients.files.download');
     Route::delete('/data-client/berkas/{clientFile}', [ClientController::class, 'destroyFile'])->name('clients.files.destroy');
