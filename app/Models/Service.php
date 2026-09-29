@@ -8,6 +8,7 @@ class Service extends Model
 {
     protected $fillable = [
         'code',
+        'service_type',
         'name',
         'base_price',
         'estimated_days',

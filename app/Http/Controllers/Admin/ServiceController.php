@@ -17,6 +17,7 @@ class ServiceController extends Controller
             return DataTables::eloquent(Service::query()->select([
                 'id',
                 'code',
+                'service_type',
                 'name',
                 'base_price',
                 'estimated_days',
@@ -63,17 +64,18 @@ class ServiceController extends Controller
     {
         return $request->validate([
             'code' => ['required', 'string', 'max:50', 'unique:services,code'.($service ? ','.$service->id : '')],
+            'service_type' => ['required', 'in:Notaris,PPAT'],
             'name' => ['required', 'string', 'max:255'],
-            'base_price' => ['required', 'integer', 'min:0'],
-            'estimated_days' => ['required', 'integer', 'min:1'],
+            'base_price' => ['nullable', 'integer', 'min:0'],
+            'estimated_days' => ['nullable', 'integer', 'min:1'],
         ], [
             'code.required' => 'Kode layanan wajib diisi.',
             'code.unique' => 'Kode layanan sudah digunakan.',
+            'service_type.required' => 'Jenis layanan wajib dipilih.',
+            'service_type.in' => 'Jenis layanan harus Notaris atau PPAT.',
             'name.required' => 'Nama layanan wajib diisi.',
-            'base_price.required' => 'Harga dasar wajib diisi.',
             'base_price.integer' => 'Harga dasar harus berupa angka bulat.',
             'base_price.min' => 'Harga dasar tidak boleh kurang dari Rp 0.',
-            'estimated_days.required' => 'Estimasi hari wajib diisi.',
             'estimated_days.integer' => 'Estimasi hari harus berupa angka bulat.',
             'estimated_days.min' => 'Estimasi hari minimal 1 hari.',
         ]);

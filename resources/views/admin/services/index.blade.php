@@ -29,6 +29,7 @@
                     <thead class="thead-light">
                         <tr>
                             <th>Kode</th>
+                            <th>Jenis Layanan</th>
                             <th>Nama Layanan</th>
                             <th>Harga Dasar (Rp)</th>
                             <th>Estimasi Hari</th>
@@ -55,18 +56,27 @@
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="form-group">
+                            <label for="service-type">Jenis Layanan</label>
+                            <select class="form-control" id="service-type" name="service_type" required>
+                                <option value="">Pilih jenis layanan</option>
+                                <option value="Notaris">Notaris</option>
+                                <option value="PPAT">PPAT</option>
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-group">
                             <label for="service-name">Nama Layanan</label>
                             <input class="form-control" id="service-name" name="name" maxlength="255" required>
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="form-group">
                             <label for="service-price">Harga Dasar (Rp)</label>
-                            <input class="form-control" id="service-price" name="base_price" type="number" min="0" step="1" inputmode="numeric" required>
+                            <input class="form-control" id="service-price" name="base_price" type="number" min="0" step="1" inputmode="numeric">
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="form-group mb-0">
                             <label for="service-days">Estimasi Hari</label>
-                            <input class="form-control" id="service-days" name="estimated_days" type="number" min="1" step="1" inputmode="numeric" required>
+                            <input class="form-control" id="service-days" name="estimated_days" type="number" min="1" step="1" inputmode="numeric">
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -100,18 +110,20 @@
                 processing: true,
                 serverSide: true,
                 ajax: endpoint,
-                order: [[1, 'asc']],
+                order: [[2, 'asc']],
                 columns: [
                     { data: 'code', name: 'code' },
+                    { data: 'service_type', name: 'service_type' },
                     { data: 'name', name: 'name' },
                     {
                         data: 'base_price', name: 'base_price', className: 'text-right',
                         render: function (value, type) {
+                            if (value === null || value === '') return type === 'display' ? '-' : '';
                             if (type !== 'display') return value;
                             return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
                         }
                     },
-                    { data: 'estimated_days', name: 'estimated_days', className: 'text-center', render: value => value + ' hari' },
+                    { data: 'estimated_days', name: 'estimated_days', className: 'text-center', render: value => value === null || value === '' ? '-' : value + ' hari' },
                     { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-center' }
                 ],
                 pageLength: 10,
@@ -150,6 +162,7 @@
                 const row = table.row($(this).closest('tr')).data();
                 editingId = id;
                 $('#service-code').val(row.code);
+                $('#service-type').val(row.service_type);
                 $('#service-name').val(row.name);
                 $('#service-price').val(row.base_price);
                 $('#service-days').val(row.estimated_days);
