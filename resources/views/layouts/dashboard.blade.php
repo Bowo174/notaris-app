@@ -37,7 +37,7 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route($dashboardRoute) }}">
                 <span class="sidebar-brand-icon"><i class="fas fa-balance-scale" aria-hidden="true"></i></span>
-                <span class="sidebar-brand-text mx-2">Notaris App</span>
+                <span class="sidebar-brand-text mx-2">{{ $role }}</span>
             </a>
             <hr class="sidebar-divider my-0">
             <li class="nav-item {{ request()->routeIs($dashboardRoute) ? 'active' : '' }}">
@@ -50,6 +50,36 @@
                 <li class="nav-item {{ request()->routeIs('admin.clients.*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.clients.index') }}"><i class="fas fa-fw fa-address-book"></i><span>Data Client</span></a>
                 </li>
+            @elseif (in_array($role, ['Notaris', 'PPAT'], true))
+                @if ($role === 'PPAT')
+                    <li class="nav-item {{ request()->routeIs('ppat.orders.*') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('ppat.orders.index') }}"><i class="fas fa-fw fa-clipboard-list"></i><span>Pemesanan</span></a>
+                    </li>
+                    <li class="nav-item {{ request()->routeIs('ppat.work-sheets.*') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('ppat.work-sheets.index') }}"><i class="fas fa-fw fa-file-signature"></i><span>Lembar Kerja</span></a>
+                    </li>
+                @else
+                <li class="nav-item {{ request()->routeIs($workspaceRoute . '.services.*') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#workspaceServices" aria-expanded="{{ request()->routeIs($workspaceRoute . '.services.*') ? 'true' : 'false' }}" aria-controls="workspaceServices">
+                        <i class="fas fa-fw fa-concierge-bell"></i><span>Layanan</span>
+                    </a>
+                    <div id="workspaceServices" class="collapse {{ request()->routeIs($workspaceRoute . '.services.*') ? 'show' : '' }}">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            {{-- <h6 class="collapse-header">{{ $role }}</h6> --}}
+                            <h6 class="collapse-header">Akta</h6>
+                            <a class="collapse-item" href="{{ route($dashboardRoute) }}">Ringkasan</a>
+                            @foreach ($accessibleServices as $menuService)
+                                <a class="collapse-item {{ request()->route('service')?->id === $menuService->id ? 'active' : '' }}" href="{{ route($workspaceRoute . '.services.show', $menuService) }}">
+                                    {{ $menuService->name }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item {{ request()->routeIs($workspaceRoute . '.clients.*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route($workspaceRoute . '.clients.index') }}"><i class="fas fa-fw fa-address-book"></i><span>Data Client</span></a>
+                </li>
+                @endif
             @endif
             <hr class="sidebar-divider">
             <div class="sidebar-heading">Akun</div>
@@ -115,6 +145,11 @@
 
             window.requestAnimationFrame(function () {
                 document.body.classList.remove('page-enter');
+            });
+
+            window.addEventListener('pageshow', function (event) {
+                if (!event.persisted) return;
+                document.body.classList.remove('page-leaving', 'page-enter');
             });
 
             document.addEventListener('click', function (event) {

@@ -13,6 +13,8 @@ class UserSeeder extends Seeder
     {
         $adminRole = Role::findOrCreate('Admin', 'web');
         $staffRole = Role::findOrCreate('Staff', 'web');
+        $notarisRole = Role::findOrCreate('Notaris', 'web');
+        $ppatRole = Role::findOrCreate('PPAT', 'web');
 
         $admin = User::firstOrCreate(
             ['email' => 'admin@notaris.app'],
@@ -25,5 +27,17 @@ class UserSeeder extends Seeder
             ['name' => 'Staff Notaris', 'password' => Hash::make('Staff@12345')],
         );
         $staff->syncRoles([$staffRole]);
+
+        $notaris = User::firstOrCreate(
+            ['email' => 'notaris@notaris.app'],
+            ['name' => 'User Notaris', 'password' => Hash::make('Notaris@12345')],
+        );
+        $notaris->syncRoles([$notarisRole]);
+
+        $ppat = User::firstOrCreate(
+            ['email' => 'ppat@notaris.app'],
+            ['name' => 'User PPAT', 'password' => Hash::make('Ppat@12345')],
+        );
+        $ppat->syncRoles([$ppatRole]);
     }
 }

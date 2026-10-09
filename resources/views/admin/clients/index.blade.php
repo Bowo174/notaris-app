@@ -131,7 +131,7 @@
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div>
                                 <h3 class="h6 font-weight-bold mb-1">Berkas pendukung</h3>
-                                <p class="small text-muted mb-0">Format PDF, maksimal 10 MB per berkas.</p>
+                                <p class="small text-muted mb-0">Format PDF, DOC, atau DOCX; maksimal 10 MB per berkas.</p>
                             </div>
                             <button type="button" class="btn btn-sm btn-outline-primary" id="add-upload-row">
                                 <i class="fas fa-plus mr-1" aria-hidden="true"></i> Tambah Berkas
@@ -178,9 +178,10 @@
                             <h3 class="h6 font-weight-bold text-gray-800 mb-3">Berkas Pendukung</h3>
                             <div id="client-file-list" class="list-group mb-3"></div>
                             <a id="client-pdf-new-tab" class="btn btn-sm btn-outline-primary mb-3 d-none" href="#" target="_blank" rel="noopener">
-                                <i class="fas fa-external-link-alt mr-1" aria-hidden="true"></i> Buka PDF di tab baru
+                                <i class="fas fa-external-link-alt mr-1" aria-hidden="true"></i> Buka berkas
                             </a>
                             <div id="client-file-empty" class="border rounded text-center text-muted py-5">Belum ada berkas untuk ditampilkan.</div>
+                            <div id="client-file-download-only" class="border rounded text-center text-muted py-4 d-none">Pratinjau Word tidak tersedia di browser. Gunakan tombol unduh berkas.</div>
                             <iframe id="client-file-preview" class="d-none" title="Pratinjau berkas PDF"></iframe>
                         </section>
                     </div>
@@ -252,8 +253,8 @@
                 labelGroup.append('<label>Nama file</label>');
                 labelGroup.append($('<input class="form-control file-label" maxlength="255" required>').attr('aria-label', 'Nama file'));
                 const fileGroup = $('<div class="form-group col-md-6 mb-md-0"></div>');
-                fileGroup.append('<label>Upload PDF</label>');
-                fileGroup.append($('<input class="form-control-file file-input" type="file" accept="application/pdf,.pdf" required>').attr('aria-label', 'Pilih berkas PDF'));
+                fileGroup.append('<label>Upload PDF, DOC, atau DOCX</label>');
+                fileGroup.append($('<input class="form-control-file file-input" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>').attr('aria-label', 'Pilih berkas PDF atau Word'));
                 const removeGroup = $('<div class="form-group col-md-1 mb-md-0 text-right"></div>');
                 removeGroup.append('<button type="button" class="btn btn-sm btn-outline-danger remove-upload-row" aria-label="Hapus baris berkas" title="Hapus baris"><i class="fas fa-times" aria-hidden="true"></i></button>');
                 fields.append(labelGroup, fileGroup, removeGroup);
@@ -327,6 +328,7 @@
             $('#client-view-modal').on('hidden.bs.modal', function () {
                 $('#client-file-preview').attr('src', 'about:blank').addClass('d-none');
                 $('#client-pdf-new-tab').attr('href', '#').addClass('d-none');
+                $('#client-file-download-only').addClass('d-none');
                 $('#client-file-list').empty();
                 $('#client-file-empty').removeClass('d-none');
             });
@@ -354,6 +356,7 @@
                     const files = client.files || [];
                     $('#client-file-empty').toggleClass('d-none', files.length > 0);
                     $('#client-file-preview').attr('src', 'about:blank').toggleClass('d-none', files.length === 0);
+                    $('#client-file-download-only').addClass('d-none');
 
                     files.forEach(function (file, index) {
                         const button = $('<button type="button" class="list-group-item list-group-item-action"></button>')
@@ -363,10 +366,12 @@
                                 fileList.find('.active').removeClass('active');
                                 button.addClass('active');
                                 const fileUrl = filesEndpoint + '/' + encodeURIComponent(file.id);
-                                $('#client-file-preview')
-                                    .attr('src', fileUrl)
-                                    .removeClass('d-none');
-                                $('#client-pdf-new-tab').attr('href', fileUrl).removeClass('d-none');
+                                const isPdf = (file.original_name.split('.').pop() || '').toLowerCase() === 'pdf';
+                                $('#client-pdf-new-tab').attr('href', fileUrl)
+                                    .toggleClass('d-none', false)
+                                    .contents().last().replaceWith(isPdf ? ' Buka PDF di tab baru' : ' Unduh berkas Word');
+                                $('#client-file-preview').attr('src', isPdf ? fileUrl : 'about:blank').toggleClass('d-none', !isPdf);
+                                $('#client-file-download-only').toggleClass('d-none', isPdf);
                             });
 
                         fileList.append(button);

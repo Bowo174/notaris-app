@@ -81,11 +81,12 @@ class ClientController extends Controller
     public function downloadFile(ClientFile $clientFile)
     {
         abort_unless(Storage::disk('local')->exists($clientFile->path), 404);
+        $isPdf = strtolower(pathinfo($clientFile->original_name, PATHINFO_EXTENSION)) === 'pdf';
 
         return Storage::disk('local')->response($clientFile->path, $clientFile->original_name, [
-            'Content-Type' => 'application/pdf',
+            'Content-Type' => $clientFile->mime_type ?: 'application/octet-stream',
             'X-Content-Type-Options' => 'nosniff',
-        ], 'inline');
+        ], $isPdf ? 'inline' : 'attachment');
     }
 
     public function destroyFile(ClientFile $clientFile): JsonResponse
@@ -109,14 +110,14 @@ class ClientController extends Controller
             'address' => ['required', 'string', 'max:5000'],
             'files' => ['sometimes', 'array', 'max:20'],
             'files.*.label' => ['required_with:files.*.file', 'string', 'max:255'],
-            'files.*.file' => ['required_with:files.*.label', 'file', 'mimes:pdf', 'max:10240'],
+            'files.*.file' => ['required_with:files.*.label', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
         ], [
             'service_id.required_without' => 'Pilih layanan atau isi layanan lainnya.',
             'other_service.required_without' => 'Isi layanan lainnya jika belum memilih layanan.',
             'nik.digits' => 'NIK harus terdiri dari 16 digit angka.',
             'client_type.in' => 'Tipe client yang dipilih tidak valid.',
             'files.max' => 'Maksimal 20 berkas dapat ditambahkan sekaligus.',
-            'files.*.file.mimes' => 'Berkas harus berformat PDF.',
+            'files.*.file.mimes' => 'Berkas harus berformat PDF, DOC, atau DOCX.',
             'files.*.file.max' => 'Ukuran setiap berkas maksimal 10 MB.',
         ]);
 
@@ -142,7 +143,7 @@ class ClientController extends Controller
                 'label' => $fileInput['label'],
                 'original_name' => $file->getClientOriginalName(),
                 'path' => $path,
-                'mime_type' => $file->getMimeType() ?: 'application/pdf',
+                'mime_type' => $file->getMimeType() ?: 'application/octet-stream',
                 'size' => $file->getSize(),
             ]);
         }

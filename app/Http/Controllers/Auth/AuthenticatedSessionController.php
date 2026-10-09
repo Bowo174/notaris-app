@@ -44,6 +44,14 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('staff.dashboard');
         }
 
+        if ($user->hasRole('Notaris')) {
+            return redirect()->route('notaris.dashboard');
+        }
+
+        if ($user->hasRole('PPAT')) {
+            return redirect()->intended(route('ppat.dashboard'));
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

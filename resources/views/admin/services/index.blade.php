@@ -32,7 +32,7 @@
                             <th>Jenis Layanan</th>
                             <th>Nama Layanan</th>
                             <th>Harga Dasar (Rp)</th>
-                            <th>Estimasi Hari</th>
+                            <th>Estimasi</th>
                             <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -52,7 +52,8 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label for="service-code">Kode</label>
-                            <input class="form-control" id="service-code" name="code" maxlength="50" required>
+                            <input class="form-control" id="service-code" name="code" maxlength="50" readonly aria-describedby="service-code-help">
+                            <small id="service-code-help" class="form-text text-muted">Kode dibuat otomatis berdasarkan jenis layanan.</small>
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="form-group">
@@ -74,10 +75,22 @@
                             <input class="form-control" id="service-price" name="base_price" type="number" min="0" step="1" inputmode="numeric">
                             <div class="invalid-feedback"></div>
                         </div>
-                        <div class="form-group mb-0">
-                            <label for="service-days">Estimasi Hari</label>
-                            <input class="form-control" id="service-days" name="estimated_days" type="number" min="1" step="1" inputmode="numeric">
-                            <div class="invalid-feedback"></div>
+                        <div class="form-row mb-0">
+                            <div class="form-group col-7 mb-0">
+                                <label for="service-duration">Estimasi</label>
+                                <input class="form-control" id="service-duration" name="estimated_duration" type="number" min="1" step="1" inputmode="numeric">
+                                <div class="invalid-feedback"></div>
+                            </div>
+                            <div class="form-group col-5 mb-0">
+                                <label for="service-estimate-unit">Satuan</label>
+                                <select class="form-control" id="service-estimate-unit" name="estimate_unit">
+                                    <option value="">Pilih</option>
+                                    <option value="hari">Hari</option>
+                                    <option value="bulan">Bulan</option>
+                                    <option value="tahun">Tahun</option>
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -99,8 +112,12 @@
     <script>
         $(function () {
             const endpoint = @json(route('admin.services.index'));
+            const nextCodeEndpoint = @json(route('admin.services.next-code'));
             const csrf = $('meta[name="csrf-token"]').attr('content');
             let editingId = null;
+            let originalType = null;
+            let originalCode = null;
+            let codeRequest = 0;
 
             $.ajaxSetup({
                 headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' }
@@ -123,7 +140,13 @@
                             return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
                         }
                     },
-                    { data: 'estimated_days', name: 'estimated_days', className: 'text-center', render: value => value === null || value === '' ? '-' : value + ' hari' },
+                    {
+                        data: 'estimated_duration', name: 'estimated_duration', className: 'text-center',
+                        render: function (value, type, row) {
+                            if (value === null || value === '') return '-';
+                            return `${value} ${row.estimate_unit || ''}`.trim();
+                        }
+                    },
                     { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-center' }
                 ],
                 pageLength: 10,
@@ -144,11 +167,46 @@
 
             function resetForm() {
                 editingId = null;
+                originalType = null;
+                originalCode = null;
+                codeRequest++;
                 $('#service-form')[0].reset();
                 $('#service-form .is-invalid').removeClass('is-invalid');
+                $('#save-service').prop('disabled', false);
                 $('#service-modal-title').text('Tambah Layanan');
                 $('#save-service').html('<i class="fas fa-save mr-1" aria-hidden="true"></i> Simpan');
             }
+
+            function refreshCodePreview() {
+                const serviceType = $('#service-type').val();
+                const requestId = ++codeRequest;
+                if (!serviceType) {
+                    $('#service-code').val('');
+                    $('#save-service').prop('disabled', false);
+                    return;
+                }
+                if (editingId !== null && serviceType === originalType) {
+                    $('#service-code').val(originalCode);
+                    $('#save-service').prop('disabled', false);
+                    return;
+                }
+                $('#service-code').val('').removeClass('is-invalid');
+                $('#save-service').prop('disabled', true);
+                $.get(nextCodeEndpoint, { service_type: serviceType }).done(function (response) {
+                    if (requestId === codeRequest) $('#service-code').val(response.code);
+                }).fail(function () {
+                    if (requestId === codeRequest) {
+                        $('#service-code').addClass('is-invalid').siblings('.invalid-feedback').text('Kode otomatis gagal dibuat. Coba pilih ulang jenis layanan.');
+                    }
+                }).always(function () {
+                    if (requestId === codeRequest) $('#save-service').prop('disabled', false);
+                });
+            }
+
+            $('#service-type').on('change', refreshCodePreview);
+            $('#service-duration').on('input change', function () {
+                $('#service-estimate-unit').prop('required', Boolean(this.value));
+            });
 
             $('#add-service').on('click', function () {
                 resetForm();
@@ -161,11 +219,15 @@
                 const id = $(this).data('id');
                 const row = table.row($(this).closest('tr')).data();
                 editingId = id;
+                originalType = row.service_type;
+                originalCode = row.code;
                 $('#service-code').val(row.code);
                 $('#service-type').val(row.service_type);
                 $('#service-name').val(row.name);
                 $('#service-price').val(row.base_price);
-                $('#service-days').val(row.estimated_days);
+                $('#service-duration').val(row.estimated_duration);
+                $('#service-estimate-unit').val(row.estimate_unit || '');
+                $('#service-estimate-unit').prop('required', Boolean(row.estimated_duration));
                 $('#service-modal-title').text('Ubah Layanan');
                 $('#save-service').html('<i class="fas fa-save mr-1" aria-hidden="true"></i> Perbarui');
                 $('#service-modal').modal('show');

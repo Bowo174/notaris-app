@@ -18,6 +18,14 @@ class DashboardController extends Controller
             return redirect()->route('staff.dashboard');
         }
 
+        if ($request->user()->hasRole('Notaris')) {
+            return redirect()->route('notaris.dashboard');
+        }
+
+        if ($request->user()->hasRole('PPAT')) {
+            return redirect()->route('ppat.dashboard');
+        }
+
         abort(403);
     }
 

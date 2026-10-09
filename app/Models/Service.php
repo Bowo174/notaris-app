@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Service extends Model
 {
@@ -11,14 +12,25 @@ class Service extends Model
         'service_type',
         'name',
         'base_price',
-        'estimated_days',
+        'estimated_duration',
+        'estimate_unit',
     ];
 
     protected function casts(): array
     {
         return [
             'base_price' => 'integer',
-            'estimated_days' => 'integer',
+            'estimated_duration' => 'integer',
         ];
+    }
+
+    public function clients(): HasMany
+    {
+        return $this->hasMany(Client::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
     }
 }
