@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\ClientFile;
-use App\Models\Service;
 use App\Models\Order;
+use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -17,7 +17,7 @@ class RoleWorkspaceController extends Controller
         $role = $this->serviceType($request);
         $context = $this->viewContext($role);
         $servicesQuery = Service::query()->where('service_type', $role)->orderBy('name');
-        $servicesQuery->withCount($role === 'PPAT' ? 'orders' : 'clients');
+        $servicesQuery->withCount($role === 'PPAT' ? ['workOrders as orders_count'] : 'clients');
         $services = $servicesQuery->get();
 
         $orderCount = $role === 'PPAT'
@@ -37,7 +37,7 @@ class RoleWorkspaceController extends Controller
 
         if ($role === 'PPAT') {
             $orders = Order::query()
-                ->where('service_id', $service->id)
+                ->whereHas('services', fn ($query) => $query->whereKey($service->id))
                 ->withCount('files')
                 ->latest()
                 ->paginate(15);

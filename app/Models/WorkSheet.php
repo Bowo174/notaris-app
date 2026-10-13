@@ -31,4 +31,15 @@ class WorkSheet extends Model
     {
         return $this->hasMany(WorkSheetFile::class);
     }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        if (($field ?? $this->getRouteKeyName()) === 'code') {
+            return $this->newQuery()
+                ->where(fn ($query) => $query->where('code', $value)->orWhere('previous_code', $value))
+                ->first();
+        }
+
+        return parent::resolveRouteBinding($value, $field);
+    }
 }

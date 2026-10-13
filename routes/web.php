@@ -1,12 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\ClientController;
+use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Admin\ServiceController;
-use App\Http\Controllers\Admin\ClientController;
-use App\Http\Controllers\RoleWorkspaceController;
 use App\Http\Controllers\PpatOrderController;
 use App\Http\Controllers\PpatWorkSheetController;
+use App\Http\Controllers\RoleWorkspaceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', DashboardController::class)->middleware('auth')->name('home');
@@ -38,7 +38,10 @@ Route::middleware(['auth', 'role:PPAT'])->prefix('ppat')->name('ppat.')->group(f
     Route::get('/pemesanan/tambah', [PpatOrderController::class, 'create'])->name('orders.create');
     Route::get('/pemesanan/cari-client', [PpatOrderController::class, 'searchClients'])->name('orders.clients.search');
     Route::post('/pemesanan', [PpatOrderController::class, 'store'])->name('orders.store');
+    Route::patch('/pemesanan/{order}', [PpatOrderController::class, 'update'])->name('orders.update');
+    Route::delete('/pemesanan/{order}', [PpatOrderController::class, 'destroy'])->name('orders.destroy');
     Route::patch('/pemesanan/{order}/status', [PpatOrderController::class, 'updateStatus'])->name('orders.status.update');
+    Route::get('/pemesanan/{order}/tanda-terima', [PpatOrderController::class, 'downloadReceipt'])->name('orders.receipt');
     Route::get('/pemesanan/{order}', [PpatOrderController::class, 'show'])->name('orders.show');
     Route::get('/berkas-pemesanan/{orderFile}', [PpatOrderController::class, 'previewFile'])->name('orders.files.preview');
     Route::get('/layanan/{service}', [RoleWorkspaceController::class, 'service'])->name('services.show');

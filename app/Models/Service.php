@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Service extends Model
@@ -32,5 +33,12 @@ class Service extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function workOrders(): BelongsToMany
+    {
+        return $this->belongsToMany(Order::class, 'order_services')
+            ->withPivot(['service_code_snapshot', 'service_name_snapshot'])
+            ->withTimestamps();
     }
 }

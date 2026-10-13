@@ -79,7 +79,8 @@
                     <div class="form-group col-md-6"><label for="client_nik">NIK / nomor identitas</label>
                         <input
                             id="client_nik" name="client[nik]" value="{{ old('client.nik') }}" class="form-control"
-                            maxlength="32" inputmode="numeric"></div>
+                            maxlength="16" inputmode="numeric" autocomplete="off" aria-describedby="client-nik-help"></div>
+                    <small id="client-nik-help" class="form-text text-muted">Masukkan tepat 16 digit angka.</small>
                     <div class="form-group col-md-6"><label for="represented_party_name">Nama pihak yang diwakili <span
                                 class="text-muted font-weight-normal">(opsional)</span></label><input
                             id="represented_party_name" name="client[represented_party_name]"
@@ -103,27 +104,22 @@
                     aria-controls="order-section-fields">Detail Pemesanan <i class="fas fa-chevron-up ml-1"
                         aria-hidden="true"></i></button></h2>
             <div id="order-section-fields" class="collapse show">
-                <div class="form-group"><label for="service_id">Layanan PPAT</label><select id="service_id"
-                        name="service_id" class="form-control" required>
-                        <option value="">Pilih layanan</option>
+                <div class="form-group">
+                    <label>Jenis Akta</label>
+                    <input id="service-filter" type="search" class="form-control mb-2" placeholder="Cari jenis akta">
+                    <div id="service-options" class="border rounded p-2" style="max-height: 240px; overflow-y: auto;">
                         @foreach ($services as $service)
-                            <option value="{{ $service->id }}" @selected((string) old('service_id') === (string) $service->id)>{{ $service->code }} -
-                                {{ $service->name }}</option>
+                            <label class="custom-control custom-checkbox py-1 service-option" data-search="{{ strtolower($service->code.' '.$service->name) }}">
+                                <input class="custom-control-input" type="checkbox" name="services[]" value="{{ $service->id }}" @checked(in_array((string) $service->id, array_map('strval', old('services', []))))>
+                                <span class="custom-control-label">{{ $service->code }} - {{ $service->name }}</span>
+                            </label>
                         @endforeach
-                        <option value="other" @selected(old('service_id') === 'other')>Layanan Lainnya</option>
-                    </select>
-                    <div class="invalid-feedback"></div>
+                    </div>
+                    <small class="form-text text-muted">Pilih satu atau lebih jenis akta.</small>
                 </div>
-                <div class="form-group" id="other-service-group" hidden><label for="other_service">Nama layanan
-                        lainnya</label><input id="other_service" name="other_service" class="form-control"
-                        maxlength="255" value="{{ old('other_service') }}">
-                    <div class="invalid-feedback"></div>
-                </div>
-                <div class="form-group"><label for="title">keperluan pemesanan</label><input id="title"
+                <div class="form-group"><label for="other_service">Jenis Akta lainnya <span class="text-muted font-weight-normal">(opsional)</span></label><input id="other_service" name="other_service" class="form-control" maxlength="255" value="{{ old('other_service') }}"></div>
+                <div class="form-group"><label for="title">Judul Akta</label><input id="title"
                         name="title" value="{{ old('title') }}" class="form-control" maxlength="255" required></div>
-                <div class="form-group"><label for="description">Ringkasan permintaan</label>
-                    <textarea id="description" name="description" class="form-control" rows="3">{{ old('description') }}</textarea>
-                </div>
                 <div class="form-group"><label for="object_location">Informasi objek / lokasi</label>
                     <textarea id="object_location" name="object_location" class="form-control" rows="2">{{ old('object_location') }}</textarea>
                 </div>
@@ -162,9 +158,12 @@
             const existing = document.getElementById('existing-client-fields');
             const fresh = document.getElementById('new-client-fields');
             const requiredFields = ['client_name', 'client_type', 'client_phone', 'client_address'];
-            const serviceSelect = document.getElementById('service_id');
-            const otherServiceGroup = document.getElementById('other-service-group');
-            const otherServiceInput = document.getElementById('other_service');
+            const serviceFilter = document.getElementById('service-filter');
+            const nikInput = document.getElementById('client_nik');
+
+            nikInput.addEventListener('input', function () {
+                nikInput.value = nikInput.value.replace(/\D/g, '').slice(0, 16);
+            });
 
             function updateClientMode() {
                 const isExisting = mode.value === 'existing';
@@ -179,14 +178,12 @@
             mode.addEventListener('change', updateClientMode);
             updateClientMode();
 
-            function updateOtherServiceField() {
-                const useOther = serviceSelect.value === 'other';
-                otherServiceGroup.hidden = !useOther;
-                otherServiceInput.required = useOther;
-                if (!useOther) otherServiceInput.value = '';
-            }
-            serviceSelect.addEventListener('change', updateOtherServiceField);
-            updateOtherServiceField();
+            serviceFilter.addEventListener('input', function () {
+                const term = serviceFilter.value.trim().toLowerCase();
+                document.querySelectorAll('.service-option').forEach((option) => {
+                    option.hidden = !option.dataset.search.includes(term);
+                });
+            });
 
             const search = document.getElementById('client-search');
             const results = document.getElementById('client-search-results');

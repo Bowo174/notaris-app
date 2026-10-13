@@ -23,6 +23,7 @@ class PpatWorkSheetController extends Controller
     {
         $query = WorkSheet::query()
             ->with(['order.service', 'order.client'])
+            ->orderByDesc('work_sheets.id')
             ->whereHas('order', function ($orders) {
                 $orders->whereHas('service', fn ($service) => $service->where('service_type', 'PPAT'))
                     ->orWhere(fn ($custom) => $custom->whereNull('service_id')->whereNotNull('other_service'));
@@ -30,6 +31,7 @@ class PpatWorkSheetController extends Controller
 
         if ($request->ajax()) {
             return DataTables::eloquent($query)
+                ->addIndexColumn()
                 ->editColumn('deed_date', fn (WorkSheet $sheet) => $sheet->deed_date?->format('d/m/Y') ?? '-')
                 ->editColumn('deed_name', fn (WorkSheet $sheet) => $sheet->order?->service_name_snapshot ?: ($sheet->deed_name ?: '-'))
                 ->addColumn('order_title', fn (WorkSheet $sheet) => $sheet->order?->title ?? '-')
@@ -82,7 +84,7 @@ class PpatWorkSheetController extends Controller
             roundBlockSizeMode: RoundBlockSizeMode::Margin,
         );
 
-        $png = (new PngWriter())->write($qrCode)->getString();
+        $png = (new PngWriter)->write($qrCode)->getString();
         $image = imagecreatefromstring($png);
         abort_if($image === false, 500, 'QR code gagal dibuat.');
 
@@ -182,6 +184,7 @@ class PpatWorkSheetController extends Controller
     private function cleanParty(array $party): ?array
     {
         $party = array_filter($party, fn ($value) => filled($value));
+
         return $party ?: null;
     }
 

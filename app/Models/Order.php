@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Order extends Model
 {
@@ -14,7 +16,7 @@ class Order extends Model
         'client_profile_id', 'service_id', 'other_service', 'created_by', 'client_name_snapshot',
         'service_code_snapshot', 'service_name_snapshot',
         'client_nik_snapshot', 'client_type_snapshot', 'represented_party_snapshot',
-        'client_phone_snapshot', 'client_email_snapshot', 'client_address_snapshot', 'title', 'description',
+        'client_phone_snapshot', 'client_email_snapshot', 'client_address_snapshot', 'title',
         'object_location', 'related_parties', 'internal_notes', 'status',
     ];
 
@@ -28,6 +30,13 @@ class Order extends Model
         return $this->belongsTo(Service::class);
     }
 
+    public function services(): BelongsToMany
+    {
+        return $this->belongsToMany(Service::class, 'order_services')
+            ->withPivot(['service_code_snapshot', 'service_name_snapshot'])
+            ->withTimestamps();
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -38,7 +47,7 @@ class Order extends Model
         return $this->hasMany(OrderFile::class);
     }
 
-    public function workSheet(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function workSheet(): HasOne
     {
         return $this->hasOne(WorkSheet::class);
     }

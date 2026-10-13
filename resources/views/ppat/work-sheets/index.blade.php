@@ -5,17 +5,56 @@
 @push('styles')
     <link href="{{ asset('template_dashboard/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
     <style>
-        #work-sheets-table { min-width: 1180px; }
-        #work-sheets-table th, #work-sheets-table td { vertical-align: middle; }
-        .worksheet-code-cell { display: flex; flex-direction: column; align-items: center; gap: .25rem; min-width: 74px; }
-        .worksheet-code-cell img { display: block; object-fit: contain; }
-        .worksheet-modal .modal-dialog { max-width: 980px; }
-        .worksheet-modal .modal-body { max-height: calc(100vh - 210px); overflow-y: auto; }
-        .worksheet-section-title { border-bottom: 1px solid #e3e6f0; padding-bottom: .55rem; margin: .25rem 0 1rem; }
+        #work-sheets-table {
+            min-width: 1180px;
+        }
+
+        #work-sheets-table th,
+        #work-sheets-table td {
+            vertical-align: middle;
+        }
+
+        .worksheet-code-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .25rem;
+            min-width: 74px;
+        }
+
+        .worksheet-code-cell img {
+            display: block;
+            object-fit: contain;
+        }
+
+        .worksheet-modal .modal-dialog {
+            max-width: 980px;
+        }
+
+        .worksheet-modal .modal-body {
+            max-height: calc(100vh - 210px);
+            overflow-y: auto;
+        }
+
+        .worksheet-section-title {
+            border-bottom: 1px solid #e3e6f0;
+            padding-bottom: .55rem;
+            margin: .25rem 0 1rem;
+        }
+
         @media (max-width: 575.98px) {
-            .worksheet-modal .modal-dialog { margin: .5rem; }
-            .worksheet-modal .modal-body { max-height: calc(100vh - 150px); padding: 1rem; }
-            .worksheet-modal .modal-footer { padding: .75rem 1rem; }
+            .worksheet-modal .modal-dialog {
+                margin: .5rem;
+            }
+
+            .worksheet-modal .modal-body {
+                max-height: calc(100vh - 150px);
+                padding: 1rem;
+            }
+
+            .worksheet-modal .modal-footer {
+                padding: .75rem 1rem;
+            }
         }
     </style>
 @endpush
@@ -23,73 +62,115 @@
 @section('content')
     <div class="mb-4">
         <h1 class="h3 mb-1 text-gray-800">Lembar Kerja</h1>
-        <p class="mb-0 text-gray-600">Lengkapi data akta, para pihak, sertipikat, dan kewajiban pajak dari pemesanan PPAT.</p>
+        <p class="mb-0 text-gray-600">Lengkapi data akta, para pihak, sertipikat, dan kewajiban pajak dari pemesanan PPAT.
+        </p>
     </div>
 
     @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">{{ session('success') }}<button type="button" class="close" data-dismiss="alert" aria-label="Tutup"><span aria-hidden="true">&times;</span></button></div>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">{{ session('success') }}<button type="button"
+                class="close" data-dismiss="alert" aria-label="Tutup"><span aria-hidden="true">&times;</span></button></div>
     @endif
 
     <div class="table-responsive bg-white border rounded shadow-sm p-3">
         <table id="work-sheets-table" class="table table-hover table-bordered mb-0">
             <thead class="thead-light">
                 <tr>
-                    <th>No.</th><th>Kode</th><th>Tanggal</th><th>Nomor Akta</th><th>Akta</th>
-                    <th>Pihak 1</th><th>Pihak 2</th><th>Sertipikat</th><th>Nilai Transaksi</th>
-                    <th>PPh</th><th>BPHTB</th><th>Aksi</th>
+                    <th>No.</th>
+                    <th>Kode</th>
+                    <th>Tanggal</th>
+                    <th>Nomor Akta</th>
+                    <th>Akta</th>
+                    <th>Pihak 1</th>
+                    <th>Pihak 2</th>
+                    <th>Sertipikat</th>
+                    <th>Nilai Transaksi</th>
+                    <th>PPh</th>
+                    <th>BPHTB</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
         </table>
     </div>
 
-    <div class="modal fade worksheet-modal" id="workSheetModal" tabindex="-1" role="dialog" aria-labelledby="workSheetModalTitle" aria-hidden="true">
+    <div class="modal fade worksheet-modal" id="workSheetModal" tabindex="-1" role="dialog"
+        aria-labelledby="workSheetModalTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable" role="document">
             <form id="workSheetForm" class="modal-content" enctype="multipart/form-data">
                 @csrf
                 @method('PATCH')
                 <div class="modal-header">
-                    <div><h2 class="modal-title h5 mb-1" id="workSheetModalTitle">Lengkapi Lembar Kerja</h2><div id="workSheetOrderTitle" class="small text-muted"></div></div>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Tutup"><span aria-hidden="true">&times;</span></button>
+                    <div>
+                        <h2 class="modal-title h5 mb-1" id="workSheetModalTitle">Lengkapi Lembar Kerja</h2>
+                        <div id="workSheetOrderTitle" class="small text-muted"></div>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Tutup"><span
+                            aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
                     <div id="workSheetErrors" class="alert alert-danger d-none" role="alert"></div>
                     <h3 class="h6 font-weight-bold worksheet-section-title">Data Akta</h3>
                     <div class="form-row">
-                        <div class="form-group col-md-6"><label for="deed_date">Tanggal</label><input id="deed_date" name="deed_date" type="date" class="form-control"></div>
-                        <div class="form-group col-md-6"><label for="deed_number">Nomor akta</label><input id="deed_number" name="deed_number" class="form-control" maxlength="100"></div>
+                        <div class="form-group col-md-6"><label for="deed_date">Tanggal</label><input id="deed_date"
+                                name="deed_date" type="date" class="form-control"></div>
+                        <div class="form-group col-md-6"><label for="deed_number">Nomor akta</label><input id="deed_number"
+                                name="deed_number" class="form-control" maxlength="100"></div>
                     </div>
 
                     @foreach (['party_one' => 'Pihak 1', 'party_two' => 'Pihak 2'] as $key => $label)
                         <h3 class="h6 font-weight-bold worksheet-section-title">{{ $label }}</h3>
                         <div class="form-row">
-                            <div class="form-group col-md-4"><label for="{{ $key }}_type">Jenis pihak</label><select id="{{ $key }}_type" name="{{ $key }}[type]" class="form-control"><option value="">Pilih jenis</option><option value="perorangan">Perorangan</option><option value="badan_usaha">Badan usaha / badan hukum</option><option value="lembaga_non_ahu">Lembaga / badan / perkumpulan non AHU</option></select></div>
-                            <div class="form-group col-md-8"><label for="{{ $key }}_name">Nama</label><input id="{{ $key }}_name" name="{{ $key }}[name]" class="form-control" maxlength="255"></div>
-                            <div class="form-group col-md-6"><label for="{{ $key }}_birth">Tempat / tanggal lahir atau data pendirian</label><input id="{{ $key }}_birth" name="{{ $key }}[birth_info]" class="form-control" maxlength="255"></div>
-                            <div class="form-group col-md-6"><label for="{{ $key }}_identity">NIK / nomor identitas</label><input id="{{ $key }}_identity" name="{{ $key }}[identity]" class="form-control" maxlength="100"></div>
-                            <div class="form-group col-12"><label for="{{ $key }}_address">Alamat</label><textarea id="{{ $key }}_address" name="{{ $key }}[address]" class="form-control" rows="2"></textarea></div>
+                            <div class="form-group col-md-4"><label for="{{ $key }}_type">Jenis pihak</label><select
+                                    id="{{ $key }}_type" name="{{ $key }}[type]" class="form-control">
+                                    <option value="">Pilih jenis</option>
+                                    <option value="perorangan">Perorangan</option>
+                                    <option value="badan_usaha">Badan usaha / badan hukum</option>
+                                    <option value="lembaga_non_ahu">Lembaga / badan / perkumpulan non AHU</option>
+                                </select></div>
+                            <div class="form-group col-md-8"><label for="{{ $key }}_name">Nama</label><input
+                                    id="{{ $key }}_name" name="{{ $key }}[name]" class="form-control" maxlength="255"></div>
+                            <div class="form-group col-md-6"><label for="{{ $key }}_birth">Tempat / tanggal lahir atau data
+                                    pendirian</label><input id="{{ $key }}_birth" name="{{ $key }}[birth_info]"
+                                    class="form-control" maxlength="255"></div>
+                            <div class="form-group col-md-6"><label for="{{ $key }}_identity">NIK / nomor
+                                    identitas</label><input id="{{ $key }}_identity" name="{{ $key }}[identity]"
+                                    class="form-control" maxlength="100"></div>
+                            <div class="form-group col-12"><label for="{{ $key }}_address">Alamat</label><textarea
+                                    id="{{ $key }}_address" name="{{ $key }}[address]" class="form-control" rows="2"></textarea>
+                            </div>
                         </div>
                     @endforeach
 
                     <h3 class="h6 font-weight-bold worksheet-section-title">Sertipikat dan Nilai</h3>
-                    <div class="form-group"><label for="certificate_details">Data sertipikat</label><textarea id="certificate_details" name="certificate_details" class="form-control" rows="3" placeholder="Nomor, jenis hak, lokasi, luas, dan keterangan lain"></textarea></div>
-                    <div class="form-group"><label for="transaction_value">Nilai transaksi (Rp)</label><input id="transaction_value" name="transaction_value" type="number" min="0" step="1" class="form-control"></div>
+                    <div class="form-group"><label for="certificate_details">Data sertipikat</label><textarea
+                            id="certificate_details" name="certificate_details" class="form-control" rows="3"
+                            placeholder="Nomor, jenis hak, lokasi, luas, dan keterangan lain"></textarea></div>
+                    <div class="form-group"><label for="transaction_value">Nilai transaksi (Rp)</label><input
+                            id="transaction_value" name="transaction_value" type="number" min="0" step="1"
+                            class="form-control"></div>
 
                     <h3 class="h6 font-weight-bold worksheet-section-title">Pajak</h3>
                     <div class="form-row">
-                        <div class="form-group col-md-4"><label for="pbb_amount">PBB (Rp)</label><input id="pbb_amount" name="pbb_amount" type="number" min="0" step="1" class="form-control"></div>
-                        <div class="form-group col-md-4"><label for="bphtb_amount">BPHTB (Rp)</label><input id="bphtb_amount" name="bphtb_amount" type="number" min="0" step="1" class="form-control"></div>
-                        <div class="form-group col-md-4"><label for="pph_amount">PPh (Rp)</label><input id="pph_amount" name="pph_amount" type="number" min="0" step="1" class="form-control"></div>
+                        <div class="form-group col-md-4"><label for="pbb_amount">PBB (Rp)</label><input id="pbb_amount"
+                                name="pbb_amount" type="number" min="0" step="1" class="form-control"></div>
+                        <div class="form-group col-md-4"><label for="bphtb_amount">BPHTB (Rp)</label><input
+                                id="bphtb_amount" name="bphtb_amount" type="number" min="0" step="1" class="form-control">
+                        </div>
+                        <div class="form-group col-md-4"><label for="pph_amount">PPh (Rp)</label><input id="pph_amount"
+                                name="pph_amount" type="number" min="0" step="1" class="form-control"></div>
                     </div>
 
                     <div class="d-flex flex-wrap justify-content-between align-items-center worksheet-section-title">
                         <h3 class="h6 font-weight-bold mb-2 mb-sm-0">Berkas pendukung</h3>
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="addWorksheetFile"><i class="fas fa-plus mr-1" aria-hidden="true"></i>Tambah berkas</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="addWorksheetFile"><i
+                                class="fas fa-plus mr-1" aria-hidden="true"></i>Tambah berkas</button>
                     </div>
                     <p class="small text-muted">PDF, DOC, atau DOCX; maksimal 10 MB per berkas.</p>
                     <div id="existingWorksheetFiles" class="list-group mb-3"></div>
                     <div id="newWorksheetFiles"></div>
                 </div>
-                <div class="modal-footer"><button type="button" class="btn btn-light" data-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary" id="saveWorkSheet"><i class="fas fa-save mr-1" aria-hidden="true"></i>Simpan</button></div>
+                <div class="modal-footer"><button type="button" class="btn btn-light"
+                        data-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary"
+                        id="saveWorkSheet"><i class="fas fa-save mr-1" aria-hidden="true"></i>Simpan</button></div>
             </form>
         </div>
     </div>
@@ -106,9 +187,9 @@
                 serverSide: true,
                 scrollX: true,
                 ajax: @json(route('ppat.work-sheets.index')),
-                order: [[0, 'desc']],
+                order: [],
                 columns: [
-                    { data: 'id', name: 'id' },
+                    { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
                     { data: 'code', name: 'code' },
                     { data: 'deed_date', name: 'deed_date', searchable: false },
                     { data: 'deed_number', name: 'deed_number', defaultContent: '-' },
